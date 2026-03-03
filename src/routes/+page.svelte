@@ -8,6 +8,7 @@ This is your page!
   import ArticleBody from '$lib/components/ArticleBody.svelte';
   import Image from '$lib/components/Image.svelte';
   import RelatedLinks from '$lib/components/RelatedLinks.svelte';
+  import RestaurantTable from '$lib/components/RestaurantTable.svelte';
 
   // Article metadata
   let headline = 'Become a force for good. Join our next class.';
@@ -20,6 +21,17 @@ This is your page!
     { headline: 'How to install, configure and use Visual Studio Code, GitHub and Copilot', href: 'https://palewi.re/docs/coding-the-news/scripts/week-1/' },
     { headline: "How to publish a website with Node.JS and GitHub Actions", href:"https://palewi.re/docs/coding-the-news/scripts/week-2/"},
   ];
+
+  // In-class changes
+    let { data } = $props();
+    $inspect(data.restaurants);
+
+    let selectedBorough = $state("");
+    let filteredRestaurants = $derived(
+      selectedBorough === ''
+      ? data.restaurants
+      : data.restaurants.filter(r => r.boro === selectedBorough)
+);
 </script>
 
 <!-- This sets the page title in the browser tab -->
@@ -29,7 +41,6 @@ This is your page!
 </svelte:head>
 
 <!-- Your page content goes here -->
-<div class="container">
   
   <!-- Article Header: Headline, byline, and publication date -->
   <ArticleHeader
@@ -48,6 +59,21 @@ This is your page!
 
   <!-- Article Body: The main story text with proper typography -->
   <ArticleBody>
+
+  <div class="filters">
+  <label for="borough">Borough</label>
+  <select id="borough" bind:value={selectedBorough}>
+    <option value="">All boroughs</option>
+    <option value="Manhattan">Manhattan</option>
+    <option value="Brooklyn">Brooklyn</option>
+    <option value="Queens">Queens</option>
+    <option value="Bronx">Bronx</option>
+    <option value="Staten Island">Staten Island</option>
+  </select>
+</div>
+
+<RestaurantTable data={filteredRestaurants} />
+  
     <p>
       At the Craig Newmark Graduate School of Journalism at the City University of New York, change is in our DNA. That comes of being born in 2006, as the digital revolution was transforming our profession in ways none of us could have imagined.
     </p>
@@ -90,8 +116,6 @@ This is your page!
     title="Related Stories"
     links={relatedStories}
   />
-
-</div>
 
 <style>
   /* Styles here only apply to this page */
