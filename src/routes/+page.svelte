@@ -34,13 +34,16 @@ This is your page!
   [...new Set(data.restaurants.map(r => r.cuisine_description))].sort()
 );
 
+let searchQuery = $state("");
+
   // Do that filter!
-    let restaurants = $derived(
-      data.restaurants.filter(r => {
-        if (selectedBorough !== '' && r.boro !== selectedBorough) return false;
-        if (selectedCuisine !== '' && r.cuisine_description !== selectedCuisine) return false;
-        return true;
-      })
+let restaurants = $derived(
+  data.restaurants.filter(r => {
+    if (selectedBorough !== '' && r.boro !== selectedBorough) return false;
+    if (selectedCuisine !== '' && r.cuisine_description !== selectedCuisine) return false;
+    if (searchQuery !== '' && !r.dba.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  })
 );
 
 let displayed = $derived(restaurants.slice(0, 100));
@@ -90,6 +93,11 @@ let displayed = $derived(restaurants.slice(0, 100));
       <option value={cuisine}>{cuisine}</option>
     {/each}
   </select>
+
+  <div>
+    <label for="search">Search by name</label>
+    <input id="search" type="text" bind:value={searchQuery} placeholder="e.g. Pizza" />
+  </div>
 </div>
 
 <p class="count">Showing {displayed.length} of {restaurants.length} restaurants</p>
@@ -167,6 +175,14 @@ let displayed = $derived(restaurants.slice(0, 100));
     border: 1px solid #ccc;
     border-radius: 3px;
   }
+
+  input[type="text"] {
+  display: block;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
 
   .count {
     font-size: 0.8rem;
