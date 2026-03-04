@@ -9,9 +9,11 @@ This is your page!
   import Image from '$lib/components/Image.svelte';
   import RelatedLinks from '$lib/components/RelatedLinks.svelte';
   import RestaurantTable from '$lib/components/RestaurantTable.svelte';
+  import BigNumber from '$lib/components/BigNumber.svelte';
+  import Dashboard from '$lib/components/Dashboard.svelte';
 
   // Article metadata
-  let headline = 'Become a force for good. Join our next class.';
+  let headline = 'Restaurants. They\'re back and they\'re filterable.';
   let byline = 'NYCity News Service';
   let pubDate = '2026-01-31';
 
@@ -28,25 +30,34 @@ This is your page!
   // Set the boro pulldown filter
     let selectedBorough = $state("");
     let selectedCuisine = $state("");
+    let selectedGrade = $state("");
 
   // Set the cuisine filter
     let cuisines = $derived(
   [...new Set(data.restaurants.map(r => r.cuisine_description))].sort()
-);
+  );
 
-let searchQuery = $state("");
+  // Set the grade filter
+  let grades = $derived(
+  [...new Set(data.restaurants.map(r => r.grade))].sort()
+  );
 
-  // Do that filter!
-let restaurants = $derived(
-  data.restaurants.filter(r => {
-    if (selectedBorough !== '' && r.boro !== selectedBorough) return false;
-    if (selectedCuisine !== '' && r.cuisine_description !== selectedCuisine) return false;
-    if (searchQuery !== '' && !r.dba.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    return true;
-  })
-);
+  //Making searchable and filterable
+    let searchQuery = $state("");
+    let restaurants = $derived(
+    data.restaurants.filter(r => {
+      if (selectedBorough !== '' && r.boro !== selectedBorough) return false;
+      if (selectedCuisine !== '' && r.cuisine_description !== selectedCuisine) return false;
+      if (selectedGrade !== '' && r.grade !== selectedGrade) return false;
+      if (searchQuery !== '' && !r.dba.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      return true;
+    })
+    );
 
-let displayed = $derived(restaurants.slice(0, 100));
+    let displayed = $derived(restaurants.slice(0, 100));
+    let displayedGradeA = $derived(displayed.filter(r => r.grade === 'A'));
+    let displayedGradeB = $derived(displayed.filter(r => r.grade === 'B'));
+    let displayedGradeC = $derived(displayed.filter(r => r.grade === 'C'));
 </script>
 
 <!-- This sets the page title in the browser tab -->
@@ -58,11 +69,13 @@ let displayed = $derived(restaurants.slice(0, 100));
 <!-- Your page content goes here -->
   
   <!-- Article Header: Headline, byline, and publication date -->
-  <ArticleHeader
-    {headline}
-    {byline}
-    {pubDate}
-  />
+  <div class="header-wrapper">
+    <ArticleHeader
+      {headline}
+      {byline}
+      {pubDate}
+    />
+  </div>
 
   <!-- Lead Image: Animated gif of students at the journalism school -->
   <Image
@@ -74,6 +87,26 @@ let displayed = $derived(restaurants.slice(0, 100));
 
   <!-- Article Body: The main story text with proper typography -->
   <ArticleBody>
+
+  <Dashboard>
+  <BigNumber
+    number={displayedGradeA.length}
+    label="Graded 'A'"
+    footnote="As of March 2, 2026"
+  />
+
+  <BigNumber
+    number={displayedGradeB.length}
+    label="Graded 'B'"
+    footnote="As of March 2, 2026"
+  />
+
+  <BigNumber
+    number={displayedGradeC.length}
+    label="Graded 'C'"
+    footnote="As of March 2, 2026"
+  />
+</Dashboard>
 
   <div class="filters">
   <label for="borough">Borough</label>
@@ -94,6 +127,14 @@ let displayed = $derived(restaurants.slice(0, 100));
     {/each}
   </select>
 
+  <label for="grade">Grade</label>
+  <select id="grade" bind:value={selectedGrade}>
+    <option value="">All grades</option>
+    {#each grades as grade}
+      <option value={grade}>{grade}</option>
+    {/each}
+  </select>
+
   <div>
     <label for="search">Search by name</label>
     <input id="search" type="text" bind:value={searchQuery} placeholder="e.g. Pizza" />
@@ -101,7 +142,10 @@ let displayed = $derived(restaurants.slice(0, 100));
 </div>
 
 <p class="count">Showing {displayed.length} of {restaurants.length} restaurants</p>
+
 <RestaurantTable data={displayed} />
+
+<hr>
   
     <p>
       At the Craig Newmark Graduate School of Journalism at the City University of New York, change is in our DNA. That comes of being born in 2006, as the digital revolution was transforming our profession in ways none of us could have imagined.
@@ -193,5 +237,9 @@ let displayed = $derived(restaurants.slice(0, 100));
   /* Styles here only apply to this page */
   .container {
     padding: var(--spacing-lg) var(--spacing-md);
+  }
+
+  .header-wrapper {
+    padding-top: 2rem;
   }
 </style>
